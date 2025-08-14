@@ -1,0 +1,191 @@
+/* Video Meeting Container */
+.meetVideoContainer {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  overflow: hidden;
+}
+
+/* Local User Video */
+.meetUserVideo {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 200px;
+  height: 150px;
+  border-radius: 10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  z-index: 1000;
+  object-fit: cover;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.meetUserVideo:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Conference View */
+.conferenceView {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  gap: 20px;
+  padding-bottom: 120px; /* Space for controls */
+}
+
+.conferenceView > div {
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.conferenceView > div:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.conferenceView video {
+  width: 400px;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Button Containers */
+.buttonContainers {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  padding: 10px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.buttonContainers button {
+  transition: all 0.3s ease;
+}
+
+.buttonContainers button:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .meetUserVideo {
+    width: 150px;
+    height: 112px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .conferenceView {
+    padding: 10px;
+    padding-bottom: 100px;
+  }
+  
+  .conferenceView video {
+    width: 300px;
+    height: 225px;
+  }
+  
+  .buttonContainers {
+    bottom: 10px;
+    padding: 8px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .meetUserVideo {
+    width: 120px;
+    height: 90px;
+    top: 5px;
+    right: 5px;
+  }
+  
+  .conferenceView video {
+    width: 250px;
+    height: 187px;
+  }
+  
+  .buttonContainers {
+    bottom: 5px;
+    padding: 6px 12px;
+  }
+}
+
+/* Animation for video elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.conferenceView > div {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Hover effects for better UX */
+.meetUserVideo:hover {
+  cursor: pointer;
+}
+
+.conferenceView > div:hover {
+  cursor: pointer;
+}
+
+/* Loading state */
+.meetVideoContainer.loading {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Empty state */
+.conferenceView:empty::after {
+  content: "Waiting for other participants to join...";
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 40px;
+  font-style: italic;
+}
+
+/* Focus states for accessibility */
+.buttonContainers button:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .meetVideoContainer {
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  }
+  
+  .buttonContainers {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}

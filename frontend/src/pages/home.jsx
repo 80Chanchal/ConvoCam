@@ -60,10 +60,34 @@ function Home() {
 
     const handleJoinVideoCall = () => {
         if (meetingCode.trim()) {
-            console.log("Joining meeting with code:", meetingCode.trim());
-            window.location.href = `/${meetingCode.trim()}`;
+            let code = meetingCode.trim();
+            
+            // Handle full URLs - extract meeting code from URL
+            if (code.includes('/')) {
+                const urlParts = code.split('/');
+                code = urlParts[urlParts.length - 1]; // Get the last part as meeting code
+            }
+            
+            // Convert to uppercase and remove any extra spaces
+            code = code.toUpperCase().trim();
+            
+            console.log("Joining meeting with code:", code);
+            
+            // Create the meeting URL
+            const meetingUrl = `${window.location.origin}/${code}`;
+            
+            // Open the meeting in a new tab/window
+            window.open(meetingUrl, '_blank');
+            
+            // Clear the input after joining
+            setMeetingCode('');
+            
         } else {
-            console.log("No meeting code provided");
+            setSnackbar({ 
+                open: true, 
+                message: 'Please enter a meeting code', 
+                severity: 'warning' 
+            });
         }
     };
 
@@ -327,11 +351,17 @@ function Home() {
                                     </Typography>
                                     <TextField
                                         fullWidth
-                                        label="Meeting Code"
+                                        label="Meeting Code or Link"
                                         value={meetingCode}
                                         onChange={(e) => setMeetingCode(e.target.value)}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter' && meetingCode.trim()) {
+                                                handleJoinVideoCall();
+                                            }
+                                        }}
                                         sx={{ mb: 3 }}
-                                        placeholder="Enter 6-digit code"
+                                        placeholder="Enter meeting code or paste full meeting link"
+                                        helperText="You can enter just the code (e.g., ABC123) or paste the full meeting link"
                                     />
                                     <Button
                                         variant="contained"

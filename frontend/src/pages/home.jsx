@@ -587,6 +587,21 @@ function Home() {
                             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
                                 Share this link with others to invite them to your meeting:
                             </Typography>
+                            <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
+                                Click the link below to open in new tab: 
+                                <a 
+                                    href={meetingLink} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    style={{ 
+                                        color: '#667eea', 
+                                        textDecoration: 'underline',
+                                        marginLeft: '5px'
+                                    }}
+                                >
+                                    {meetingLink}
+                                </a>
+                            </Typography>
                             <Box sx={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -607,11 +622,35 @@ function Home() {
                             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <Button
                                     variant="contained"
-                                    component="a"
-                                    href={meetingLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={() => setShowModal(false)}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        
+                                        console.log("Opening meeting in new tab:", meetingLink);
+                                        
+                                        // Force open in new tab - multiple approaches
+                                        const newWindow = window.open(meetingLink, '_blank');
+                                        
+                                        if (newWindow) {
+                                            console.log("Successfully opened in new tab");
+                                            newWindow.focus();
+                                        } else {
+                                            console.log("Popup blocked, trying alternative method");
+                                            // Alternative: create a temporary link and click it
+                                            const tempLink = document.createElement('a');
+                                            tempLink.href = meetingLink;
+                                            tempLink.target = '_blank';
+                                            tempLink.rel = 'noopener noreferrer';
+                                            tempLink.style.position = 'absolute';
+                                            tempLink.style.left = '-9999px';
+                                            document.body.appendChild(tempLink);
+                                            tempLink.click();
+                                            document.body.removeChild(tempLink);
+                                        }
+                                        
+                                        // Close modal
+                                        setShowModal(false);
+                                    }}
                                     sx={{
                                         background: 'linear-gradient(45deg, #667eea, #764ba2)',
                                         '&:hover': {
@@ -624,6 +663,23 @@ function Home() {
                                 
 
                                 
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        // Direct navigation approach
+                                        window.location.href = meetingLink;
+                                    }}
+                                    sx={{
+                                        borderColor: '#ff6b6b',
+                                        color: '#ff6b6b',
+                                        '&:hover': {
+                                            borderColor: '#ee5a24',
+                                            backgroundColor: 'rgba(255, 107, 107, 0.1)'
+                                        }
+                                    }}
+                                >
+                                    Direct Join
+                                </Button>
                                 <Button
                                     variant="outlined"
                                     onClick={() => setShowModal(false)}

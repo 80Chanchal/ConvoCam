@@ -1,10 +1,10 @@
 // Environment configuration
 export const config = {
-  // Backend API URL
-  API_URL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  // Backend API URL - Use IP address for mobile, localhost for desktop
+  API_URL: process.env.REACT_APP_API_URL || getServerUrl(),
   
-  // Socket.IO server URL
-  SOCKET_URL: process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000',
+  // Socket.IO server URL - Use IP address for mobile, localhost for desktop
+  SOCKET_URL: process.env.REACT_APP_SOCKET_URL || getServerUrl(),
   
   // STUN servers for WebRTC
   STUN_SERVERS: [
@@ -53,6 +53,17 @@ export const config = {
 // Helper function to detect mobile devices
 export const isMobile = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+// Helper function to get the appropriate server URL
+export const getServerUrl = () => {
+  // For mobile devices, use the computer's IP address
+  // For desktop, use localhost
+  if (isMobile()) {
+    // Your computer's actual IP address for mobile testing
+    return 'http://10.47.118.238:5000';
+  }
+  return 'http://localhost:5000';
 };
 
 // Helper function to get appropriate video constraints

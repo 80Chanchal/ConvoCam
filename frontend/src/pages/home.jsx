@@ -63,13 +63,39 @@ function Home() {
             let code = meetingCode.trim();
             
             // Handle full URLs - extract meeting code from URL
-            if (code.includes('/')) {
-                const urlParts = code.split('/');
+            if (code.includes('http')) {
+                // Extract meeting code from full URL
+                try {
+                    const url = new URL(code);
+                    const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+                    code = pathParts[pathParts.length - 1]; // Get the last part as meeting code
+                } catch (error) {
+                    console.error('Invalid URL format:', error);
+                    setSnackbar({ 
+                        open: true, 
+                        message: 'Invalid meeting link format', 
+                        severity: 'error' 
+                    });
+                    return;
+                }
+            } else if (code.includes('/')) {
+                // Handle relative URLs or paths
+                const urlParts = code.split('/').filter(part => part.length > 0);
                 code = urlParts[urlParts.length - 1]; // Get the last part as meeting code
             }
             
             // Convert to uppercase and remove any extra spaces
             code = code.toUpperCase().trim();
+            
+            // Validate meeting code format (6 characters, alphanumeric)
+            if (!/^[A-Z0-9]{6}$/.test(code)) {
+                setSnackbar({ 
+                    open: true, 
+                    message: 'Invalid meeting code format. Please enter a 6-character code.', 
+                    severity: 'error' 
+                });
+                return;
+            }
             
             console.log("Joining meeting with code:", code);
             

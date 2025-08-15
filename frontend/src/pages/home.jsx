@@ -61,14 +61,23 @@ function Home() {
     const handleJoinVideoCall = () => {
         if (meetingCode.trim()) {
             let code = meetingCode.trim();
+            console.log("Original input:", code);
             
-            // Handle full URLs - extract meeting code from URL
+            // Handle complex URLs with nested paths
             if (code.includes('http')) {
-                // Extract meeting code from full URL
                 try {
-                    const url = new URL(code);
-                    const pathParts = url.pathname.split('/').filter(part => part.length > 0);
-                    code = pathParts[pathParts.length - 1]; // Get the last part as meeting code
+                    // First, try to extract any 6-character alphanumeric code from the URL
+                    const codeMatch = code.match(/[A-Z0-9]{6}/gi);
+                    if (codeMatch && codeMatch.length > 0) {
+                        code = codeMatch[codeMatch[codeMatch.length - 1]]; // Get the last match
+                        console.log("Extracted code from URL:", code);
+                    } else {
+                        // Fallback to URL parsing
+                        const url = new URL(code);
+                        const pathParts = url.pathname.split('/').filter(part => part.length > 0);
+                        code = pathParts[pathParts.length - 1];
+                        console.log("Extracted code from path:", code);
+                    }
                 } catch (error) {
                     console.error('Invalid URL format:', error);
                     setSnackbar({ 
@@ -81,17 +90,19 @@ function Home() {
             } else if (code.includes('/')) {
                 // Handle relative URLs or paths
                 const urlParts = code.split('/').filter(part => part.length > 0);
-                code = urlParts[urlParts.length - 1]; // Get the last part as meeting code
+                code = urlParts[urlParts.length - 1];
+                console.log("Extracted code from relative path:", code);
             }
             
             // Convert to uppercase and remove any extra spaces
             code = code.toUpperCase().trim();
+            console.log("Final processed code:", code);
             
             // Validate meeting code format (6 characters, alphanumeric)
             if (!/^[A-Z0-9]{6}$/.test(code)) {
                 setSnackbar({ 
                     open: true, 
-                    message: 'Invalid meeting code format. Please enter a 6-character code.', 
+                    message: `Invalid meeting code format: "${code}". Please enter a 6-character alphanumeric code.`, 
                     severity: 'error' 
                 });
                 return;
@@ -101,6 +112,7 @@ function Home() {
             
             // Create the meeting URL
             const meetingUrl = `${window.location.origin}/${code}`;
+            console.log("Opening URL:", meetingUrl);
             
             // Open the meeting in a new tab/window
             window.open(meetingUrl, '_blank');
@@ -409,6 +421,27 @@ function Home() {
                                     >
                                         Join Meeting
                                     </Button>
+                                    
+                                    {/* Debug button - remove after testing */}
+                                    {process.env.NODE_ENV === 'development' && (
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => {
+                                                console.log("Testing URL parsing...");
+                                                const testUrl = "https://convocam.netlify.app/home/https://convocam.netlify.app/5UQOHY";
+                                                const codeMatch = testUrl.match(/[A-Z0-9]{6}/gi);
+                                                console.log("Test URL:", testUrl);
+                                                console.log("Extracted codes:", codeMatch);
+                                                if (codeMatch && codeMatch.length > 0) {
+                                                    console.log("Last code:", codeMatch[codeMatch.length - 1]);
+                                                }
+                                            }}
+                                            sx={{ mt: 1, color: 'white', borderColor: 'white' }}
+                                        >
+                                            Debug URL
+                                        </Button>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Grid>

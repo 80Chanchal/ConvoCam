@@ -604,28 +604,43 @@ function Home() {
                                     <ContentCopyIcon />
                                 </IconButton>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <Button
                                     variant="contained"
                                     onClick={() => {
                                         console.log("Attempting to open meeting:", meetingLink);
                                         
-                                        // Try to open in new tab
-                                        const newWindow = window.open(meetingLink, '_blank', 'noopener,noreferrer');
-                                        
-                                        // Check if popup was blocked
-                                        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                                            console.log("Popup blocked, trying alternative method");
-                                            // Fallback: create a temporary link and click it
-                                            const link = document.createElement('a');
-                                            link.href = meetingLink;
-                                            link.target = '_blank';
-                                            link.rel = 'noopener noreferrer';
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
-                                        } else {
-                                            console.log("Meeting opened successfully in new tab");
+                                        // Force open in new tab using multiple methods
+                                        try {
+                                            // Method 1: Direct window.open with full parameters
+                                            const newWindow = window.open(meetingLink, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+                                            
+                                            if (newWindow) {
+                                                console.log("Meeting opened successfully in new tab");
+                                                newWindow.focus(); // Bring the new window to front
+                                            } else {
+                                                throw new Error("Popup blocked");
+                                            }
+                                        } catch (error) {
+                                            console.log("Primary method failed, trying fallback:", error);
+                                            
+                                            // Method 2: Create and click a link element
+                                            try {
+                                                const link = document.createElement('a');
+                                                link.href = meetingLink;
+                                                link.target = '_blank';
+                                                link.rel = 'noopener noreferrer';
+                                                link.style.display = 'none';
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                console.log("Fallback method executed");
+                                            } catch (fallbackError) {
+                                                console.error("Fallback method failed:", fallbackError);
+                                                
+                                                // Method 3: Show alert with link for manual opening
+                                                alert(`Please manually open this link in a new tab:\n${meetingLink}`);
+                                            }
                                         }
                                         
                                         // Close the modal
@@ -640,6 +655,27 @@ function Home() {
                                 >
                                     Join Meeting
                                 </Button>
+                                
+                                {/* Direct link button as backup */}
+                                <Button
+                                    variant="outlined"
+                                    component="a"
+                                    href={meetingLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => setShowModal(false)}
+                                    sx={{
+                                        borderColor: '#667eea',
+                                        color: '#667eea',
+                                        '&:hover': {
+                                            borderColor: '#764ba2',
+                                            backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                                        }
+                                    }}
+                                >
+                                    Open Link
+                                </Button>
+                                
                                 <Button
                                     variant="outlined"
                                     onClick={() => setShowModal(false)}

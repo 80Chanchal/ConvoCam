@@ -625,16 +625,22 @@ function Home() {
                             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <Button
                                     variant="contained"
-                                    onClick={() => {
-                                        // Simple and direct approach
-                                        console.log("Opening meeting:", meetingLink);
+                                    component="a"
+                                    href={meetingLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                        // Prevent default to handle manually
+                                        e.preventDefault();
                                         
-                                        // Try to open in new tab
-                                        try {
-                                            window.open(meetingLink, '_blank');
-                                        } catch (error) {
-                                            console.error("Error opening new tab:", error);
-                                        }
+                                        // Create a temporary link and click it
+                                        const link = document.createElement('a');
+                                        link.href = meetingLink;
+                                        link.target = '_blank';
+                                        link.rel = 'noopener noreferrer';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
                                         
                                         // Close modal
                                         setShowModal(false);
@@ -652,6 +658,25 @@ function Home() {
 
                                 
 
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        // Alternative method using window.open with full URL
+                                        const fullUrl = new URL(meetingLink, window.location.origin).href;
+                                        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+                                        setShowModal(false);
+                                    }}
+                                    sx={{
+                                        borderColor: '#667eea',
+                                        color: '#667eea',
+                                        '&:hover': {
+                                            borderColor: '#764ba2',
+                                            backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                                        }
+                                    }}
+                                >
+                                    Open New Tab
+                                </Button>
                                 <Button
                                     variant="outlined"
                                     onClick={() => setShowModal(false)}

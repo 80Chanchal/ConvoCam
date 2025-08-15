@@ -25,6 +25,7 @@
 .meetUserVideo:hover {
   transform: scale(1.05);
   border-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
 }
 
 /* Conference View */
@@ -45,12 +46,14 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   border: 3px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .conferenceView > div:hover {
   transform: translateY(-5px);
   border-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
 }
 
 .conferenceView video {
@@ -87,6 +90,39 @@
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
+.buttonContainers button:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Animation for video elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading state */
+.meetVideoContainer.loading {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Empty state */
+.conferenceView:empty::after {
+  content: "Waiting for other participants to join...";
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 40px;
+  font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .meetUserVideo {
@@ -120,19 +156,6 @@
     height: 40px !important;
   }
 }
-    padding-bottom: 100px;
-  }
-  
-  .conferenceView video {
-    width: 300px;
-    height: 225px;
-  }
-  
-  .buttonContainers {
-    bottom: 10px;
-    padding: 8px 15px;
-  }
-}
 
 @media (max-width: 480px) {
   .meetUserVideo {
@@ -151,53 +174,6 @@
     bottom: 5px;
     padding: 6px 12px;
   }
-}
-
-/* Animation for video elements */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.conferenceView > div {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Hover effects for better UX */
-.meetUserVideo:hover {
-  cursor: pointer;
-}
-
-.conferenceView > div:hover {
-  cursor: pointer;
-}
-
-/* Loading state */
-.meetVideoContainer.loading {
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-/* Empty state */
-.conferenceView:empty::after {
-  content: "Waiting for other participants to join...";
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 1.2rem;
-  text-align: center;
-  padding: 40px;
-  font-style: italic;
-}
-
-/* Focus states for accessibility */
-.buttonContainers button:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
 }
 
 /* Dark mode adjustments */

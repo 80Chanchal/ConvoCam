@@ -1,21 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { connectToSocket } from './src/controllers/socketManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
-});
 
 // Middleware
 app.use(cors({
@@ -30,25 +24,8 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Backend server is running!' });
 });
 
-// Socket.IO connection
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-  
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-  
-  // Handle video meeting events
-  socket.on('join-room', (roomId) => {
-    socket.join(roomId);
-    socket.to(roomId).emit('user-connected');
-  });
-  
-  socket.on('disconnect-room', (roomId) => {
-    socket.leave(roomId);
-    socket.to(roomId).emit('user-disconnected');
-  });
-});
+// Connect Socket.IO with video call manager
+const io = connectToSocket(server);
 
 const PORT = process.env.PORT || 5000;
 

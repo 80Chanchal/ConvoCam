@@ -21,8 +21,12 @@ var connections = {};
 
 const peerConfigConnections = {
     "iceServers": [
-        { "urls": "stun:stun.l.google.com:19302" }
-    ]
+        ...config.STUN_SERVERS,
+        ...config.TURN_SERVERS
+    ],
+    "iceCandidatePoolSize": 10,
+    "bundlePolicy": "max-bundle",
+    "rtcpMuxPolicy": "require"
 }
 
 export default function VideoMeetComponent() {
@@ -303,24 +307,42 @@ export default function VideoMeetComponent() {
     }
 
     let gotMessageFromServer = (fromId, message) => {
-        var signal = JSON.parse(message)
+        console.log('Received signal from:', fromId, 'Message type:', message.includes('sdp') ? 'SDP' : 'ICE');
+        
+        try {
+            var signal = JSON.parse(message)
 
-        if (fromId !== socketIdRef.current) {
-            if (signal.sdp) {
-                connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp)).then(() => {
-                    if (signal.sdp.type === 'offer') {
-                        connections[fromId].createAnswer().then((description) => {
-                            connections[fromId].setLocalDescription(description).then(() => {
-                                socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
-                            }).catch(e => console.log(e))
-                        }).catch(e => console.log(e))
-                    }
-                }).catch(e => console.log(e))
-            }
+            if (fromId !== socketIdRef.current) {
+                if (signal.sdp) {
+                    console.log('Processing SDP signal from:', fromId, 'Type:', signal.sdp.type);
+                    connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp)).then(() => {
+                        if (signal.sdp.type === 'offer') {
+                            console.log('Creating answer for offer from:', fromId);
+                            connections[fromId].createAnswer().then((description) => {
+                                connections[fromId].setLocalDescription(description).then(() => {
+                                    console.log('Sending answer to:', fromId);
+                                    socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }))
+                                }).catch(e => {
+                                    console.error('Error setting local description:', e);
+                                })
+                            }).catch(e => {
+                                console.error('Error creating answer:', e);
+                            })
+                        }
+                    }).catch(e => {
+                        console.error('Error setting remote description:', e);
+                    })
+                }
 
-            if (signal.ice) {
-                connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch(e => console.log(e))
+                if (signal.ice) {
+                    console.log('Adding ICE candidate from:', fromId);
+                    connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch(e => {
+                        console.error('Error adding ICE candidate:', e);
+                    })
+                }
             }
+        } catch (error) {
+            console.error('Error processing signal:', error);
         }
     }
 
@@ -328,33 +350,69 @@ export default function VideoMeetComponent() {
 
 
     let connectToSocketServer = () => {
-        socketRef.current = io.connect(server_url, { secure: false })
+        console.log('Connecting to socket server:', server_url);
+        
+        socketRef.current = io.connect(server_url, { 
+            secure: false,
+            transports: ['websocket', 'polling'],
+            timeout: 20000,
+            forceNew: true
+        });
+
+        socketRef.current.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+            alert('Failed to connect to video server. Please check your internet connection and try again.');
+        });
+
+        socketRef.current.on('connect_timeout', () => {
+            console.error('Socket connection timeout');
+            alert('Connection timeout. Please try again.');
+        });
 
         socketRef.current.on('signal', gotMessageFromServer)
 
         socketRef.current.on('connect', () => {
-            socketRef.current.emit('join-call', `${window.location.origin}/${url}`)
+            console.log('Connected to socket server with ID:', socketRef.current.id);
+            const meetingPath = `${window.location.origin}/${url}`;
+            console.log('Joining meeting:', meetingPath);
+            socketRef.current.emit('join-call', meetingPath)
             socketIdRef.current = socketRef.current.id
 
             socketRef.current.on('chat-message', addMessage)
 
             socketRef.current.on('user-left', (id) => {
+                console.log('User left:', id);
                 setVideos((videos) => videos.filter((video) => video.socketId !== id))
             })
 
             socketRef.current.on('user-joined', (id, clients) => {
+                console.log('User joined:', id, 'Total clients:', clients.length);
                 clients.forEach((socketListId) => {
+                    console.log('Creating peer connection for:', socketListId);
 
                     connections[socketListId] = new RTCPeerConnection(peerConfigConnections)
+                    
+                    // Handle connection state changes
+                    connections[socketListId].onconnectionstatechange = () => {
+                        console.log('Connection state for', socketListId, ':', connections[socketListId].connectionState);
+                    };
+                    
+                    // Handle ICE connection state changes
+                    connections[socketListId].oniceconnectionstatechange = () => {
+                        console.log('ICE connection state for', socketListId, ':', connections[socketListId].iceConnectionState);
+                    };
+                    
                     // Wait for their ice candidate       
                     connections[socketListId].onicecandidate = function (event) {
                         if (event.candidate != null) {
+                            console.log('Sending ICE candidate to:', socketListId);
                             socketRef.current.emit('signal', socketListId, JSON.stringify({ 'ice': event.candidate }))
                         }
                     }
 
                     // Wait for their video stream
                     connections[socketListId].onaddstream = (event) => {
+                        console.log('Received stream from:', socketListId);
                         console.log("BEFORE:", videoRef.current);
                         console.log("FINDING ID: ", socketListId);
 

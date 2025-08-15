@@ -604,7 +604,12 @@ function Home() {
                             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
                                 <Button
                                     variant="contained"
-                                    onClick={() => navigate(meetingLink)}
+                                    onClick={() => {
+                                        // Open meeting in new tab
+                                        window.open(meetingLink, '_blank');
+                                        // Close the modal
+                                        setShowModal(false);
+                                    }}
                                     sx={{
                                         background: 'linear-gradient(45deg, #667eea, #764ba2)',
                                         '&:hover': {

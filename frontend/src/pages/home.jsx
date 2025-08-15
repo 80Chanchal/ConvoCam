@@ -203,7 +203,12 @@ function Home() {
                 position: 'relative',
                 zIndex: 3,
                 width: '100%',
-                p: 2 // Added padding for better mobile spacing
+                p: 2, // Added padding for better mobile spacing
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh'
             }}>
                 {/* Header */}
                 <Box sx={{
@@ -212,7 +217,8 @@ function Home() {
                     alignItems: 'center',
                     py: 3,
                     mb: 4,
-                    width: '100%'
+                    width: '100%',
+                    maxWidth: '1200px'
                 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <VideoCallIcon sx={{ fontSize: 40, color: 'white', mr: 1 }} />
@@ -271,8 +277,10 @@ function Home() {
                     padding: '3rem',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     maxWidth: '800px',
-                    mx: 'auto',
-                    width: '100%'
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
                 }}>
                     <Typography variant="h3" sx={{
                         color: 'white',
@@ -295,11 +303,12 @@ function Home() {
                 {/* Main Actions */}
                 <Box sx={{
                     mb: 6,
-                    width: '100%'
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center'
                 }}>
                     <Grid container spacing={4} sx={{
                         maxWidth: '1000px',
-                        mx: 'auto',
                         width: '100%',
                         justifyContent: 'center' // Added to center grid items
                     }}>
@@ -455,11 +464,13 @@ function Home() {
                 <Box sx={{
                     textAlign: 'center',
                     mb: 6,
-                    width: '100%'
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center'
                 }}>
                     <Grid container spacing={3} sx={{
                         maxWidth: '1000px',
-                        mx: 'auto',
+                        width: '100%',
                         justifyContent: 'center' // Added to center grid items
                     }}>
                         <Grid item xs={12} sm={6} md={3}>

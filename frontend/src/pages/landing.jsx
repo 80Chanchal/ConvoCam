@@ -83,7 +83,9 @@ export default function Landing() {
                 zIndex: 3,
                 flex: 1,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
             }}>
                 {/* Navigation */}
                 <Box sx={{ 
@@ -91,7 +93,8 @@ export default function Landing() {
                     justifyContent: 'space-between', 
                     alignItems: 'center',
                     py: 3,
-                    width: '100%'
+                    width: '100%',
+                    maxWidth: '1200px'
                 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <VideoCallIcon sx={{ fontSize: 40, color: 'white', mr: 1 }} />
@@ -132,7 +135,6 @@ export default function Landing() {
                 }}>
                     <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center" justifyContent="center" sx={{ 
                         maxWidth: '1400px',
-                        mx: 'auto',
                         width: '100%'
                     }}>
                         <Grid item xs={12} md={6} className="fadeIn">

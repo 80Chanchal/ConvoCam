@@ -625,22 +625,24 @@ function Home() {
                             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                                 <Button
                                     variant="contained"
-                                    component="a"
-                                    href={meetingLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => {
-                                        // Prevent default to handle manually
-                                        e.preventDefault();
+                                    onClick={() => {
+                                        // Method 1: Direct window.open with specific features
+                                        const newWindow = window.open(meetingLink, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes,toolbar=yes,menubar=yes,location=yes,status=yes');
                                         
-                                        // Create a temporary link and click it
-                                        const link = document.createElement('a');
-                                        link.href = meetingLink;
-                                        link.target = '_blank';
-                                        link.rel = 'noopener noreferrer';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
+                                        if (newWindow) {
+                                            newWindow.focus();
+                                            console.log("Successfully opened in new window");
+                                        } else {
+                                            // Method 2: If popup blocked, try creating a form submission
+                                            console.log("Popup blocked, trying form method");
+                                            const form = document.createElement('form');
+                                            form.method = 'GET';
+                                            form.action = meetingLink;
+                                            form.target = '_blank';
+                                            document.body.appendChild(form);
+                                            form.submit();
+                                            document.body.removeChild(form);
+                                        }
                                         
                                         // Close modal
                                         setShowModal(false);
@@ -661,9 +663,23 @@ function Home() {
                                 <Button
                                     variant="outlined"
                                     onClick={() => {
-                                        // Alternative method using window.open with full URL
-                                        const fullUrl = new URL(meetingLink, window.location.origin).href;
-                                        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+                                        // Method 3: Using location.assign in new window
+                                        try {
+                                            const newWin = window.open('', '_blank');
+                                            if (newWin) {
+                                                newWin.location.assign(meetingLink);
+                                                newWin.focus();
+                                            } else {
+                                                // Method 4: Using postMessage to communicate with new window
+                                                const newWindow = window.open('about:blank', '_blank');
+                                                if (newWindow) {
+                                                    newWindow.postMessage({ type: 'redirect', url: meetingLink }, '*');
+                                                    newWindow.focus();
+                                                }
+                                            }
+                                        } catch (error) {
+                                            console.error("Error with location.assign method:", error);
+                                        }
                                         setShowModal(false);
                                     }}
                                     sx={{
@@ -675,7 +691,45 @@ function Home() {
                                         }
                                     }}
                                 >
-                                    Open New Tab
+                                    Method 2
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        // Method 5: Using iframe approach
+                                        const iframe = document.createElement('iframe');
+                                        iframe.style.display = 'none';
+                                        iframe.src = meetingLink;
+                                        document.body.appendChild(iframe);
+                                        
+                                        // Remove iframe after a short delay
+                                        setTimeout(() => {
+                                            document.body.removeChild(iframe);
+                                        }, 100);
+                                        
+                                        // Method 6: Direct navigation with history
+                                        try {
+                                            const newWindow = window.open('', '_blank');
+                                            if (newWindow) {
+                                                newWindow.history.pushState({}, '', meetingLink);
+                                                newWindow.location.reload();
+                                            }
+                                        } catch (error) {
+                                            console.error("Error with iframe method:", error);
+                                        }
+                                        
+                                        setShowModal(false);
+                                    }}
+                                    sx={{
+                                        borderColor: '#ff6b6b',
+                                        color: '#ff6b6b',
+                                        '&:hover': {
+                                            borderColor: '#ee5a24',
+                                            backgroundColor: 'rgba(255, 107, 107, 0.1)'
+                                        }
+                                    }}
+                                >
+                                    Method 3
                                 </Button>
                                 <Button
                                     variant="outlined"

@@ -45,6 +45,9 @@ function Home() {
     const createMeeting = () => {
         const code = generateMeetingCode();
         const link = `${window.location.origin}/${code}`;
+        console.log("Generated meeting code:", code);
+        console.log("Generated meeting link:", link);
+        console.log("Current origin:", window.location.origin);
         setMeetingLink(link);
         setShowModal(true);
     };
@@ -605,8 +608,26 @@ function Home() {
                                 <Button
                                     variant="contained"
                                     onClick={() => {
-                                        // Open meeting in new tab
-                                        window.open(meetingLink, '_blank');
+                                        console.log("Attempting to open meeting:", meetingLink);
+                                        
+                                        // Try to open in new tab
+                                        const newWindow = window.open(meetingLink, '_blank', 'noopener,noreferrer');
+                                        
+                                        // Check if popup was blocked
+                                        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                                            console.log("Popup blocked, trying alternative method");
+                                            // Fallback: create a temporary link and click it
+                                            const link = document.createElement('a');
+                                            link.href = meetingLink;
+                                            link.target = '_blank';
+                                            link.rel = 'noopener noreferrer';
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        } else {
+                                            console.log("Meeting opened successfully in new tab");
+                                        }
+                                        
                                         // Close the modal
                                         setShowModal(false);
                                     }}
@@ -626,6 +647,33 @@ function Home() {
                                     Close
                                 </Button>
                             </Box>
+                            
+                            {/* Debug info - remove after testing */}
+                            {process.env.NODE_ENV === 'development' && (
+                                <Box sx={{ mt: 2, p: 2, background: '#f0f0f0', borderRadius: '5px', fontSize: '12px' }}>
+                                    <Typography variant="caption" display="block">
+                                        Debug Info:
+                                    </Typography>
+                                    <Typography variant="caption" display="block">
+                                        Meeting Link: {meetingLink}
+                                    </Typography>
+                                    <Typography variant="caption" display="block">
+                                        Current URL: {window.location.href}
+                                    </Typography>
+                                    <Button
+                                        size="small"
+                                        variant="text"
+                                        onClick={() => {
+                                            console.log("Current URL:", window.location.href);
+                                            console.log("Meeting Link:", meetingLink);
+                                            console.log("Origin:", window.location.origin);
+                                            alert(`Meeting Link: ${meetingLink}\nCurrent URL: ${window.location.href}`);
+                                        }}
+                                    >
+                                        Debug Info
+                                    </Button>
+                                </Box>
+                            )}
                         </CardContent>
                     </Card>
                 </Box>

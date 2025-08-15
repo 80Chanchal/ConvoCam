@@ -11,7 +11,7 @@ import MicOffIcon from '@mui/icons-material/MicOff'
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import ChatIcon from '@mui/icons-material/Chat'
-import config from '../environment';
+import config, { isMobile, getVideoConstraints } from '../environment';
 import ChatComponent from '../components/ChatComponent';
 import { useParams } from 'react-router-dom';
 
@@ -89,41 +89,68 @@ export default function VideoMeetComponent() {
 
     const getPermissions = async () => {
         try {
-            const videoPermission = await navigator.mediaDevices.getUserMedia({ video: true });
-            if (videoPermission) {
-                setVideoAvailable(true);
-                console.log('Video permission granted');
-            } else {
+            // Check if we're on HTTPS (required for mobile camera access)
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                console.warn('Camera access requires HTTPS on mobile devices');
+                alert('Camera access requires HTTPS. Please use HTTPS or localhost for testing.');
+                return;
+            }
+
+            // Check if mediaDevices is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error('Media devices not supported');
+                alert('Camera access is not supported in this browser');
+                return;
+            }
+
+            // Get video permission with mobile-friendly constraints
+            try {
+                const videoConstraints = getVideoConstraints();
+                const videoPermission = await navigator.mediaDevices.getUserMedia({ 
+                    video: videoConstraints 
+                });
+                if (videoPermission) {
+                    setVideoAvailable(true);
+                    console.log('Video permission granted');
+                    // Stop the stream immediately after permission check
+                    videoPermission.getTracks().forEach(track => track.stop());
+                }
+            } catch (videoError) {
+                console.log('Video permission denied:', videoError);
                 setVideoAvailable(false);
-                console.log('Video permission denied');
             }
 
-            const audioPermission = await navigator.mediaDevices.getUserMedia({ audio: true });
-            if (audioPermission) {
-                setAudioAvailable(true);
-                console.log('Audio permission granted');
-            } else {
+            // Get audio permission
+            try {
+                const audioPermission = await navigator.mediaDevices.getUserMedia({ 
+                    audio: config.AUDIO_CONSTRAINTS 
+                });
+                if (audioPermission) {
+                    setAudioAvailable(true);
+                    console.log('Audio permission granted');
+                    // Stop the stream immediately after permission check
+                    audioPermission.getTracks().forEach(track => track.stop());
+                }
+            } catch (audioError) {
+                console.log('Audio permission denied:', audioError);
                 setAudioAvailable(false);
-                console.log('Audio permission denied');
             }
 
+            // Check screen sharing availability
             if (navigator.mediaDevices.getDisplayMedia) {
                 setScreenAvailable(true);
             } else {
                 setScreenAvailable(false);
             }
 
-            if (videoAvailable || audioAvailable) {
-                const userMediaStream = await navigator.mediaDevices.getUserMedia({ video: videoAvailable, audio: audioAvailable });
-                if (userMediaStream) {
-                    window.localStream = userMediaStream;
-                    if (localVideoref.current) {
-                        localVideoref.current.srcObject = userMediaStream;
-                    }
-                }
+            // If mobile, show a helpful message
+            if (isMobile()) {
+                console.log('Mobile device detected, using mobile-optimized settings');
             }
+
         } catch (error) {
-            console.log(error);
+            console.error('Permission error:', error);
+            alert(`Camera access error: ${error.message}`);
         }
     };
 
@@ -201,10 +228,27 @@ export default function VideoMeetComponent() {
 
     let getUserMedia = () => {
         if ((video && videoAvailable) || (audio && audioAvailable)) {
-            navigator.mediaDevices.getUserMedia({ video: video, audio: audio })
+            const constraints = {
+                video: video ? getVideoConstraints() : false,
+                audio: audio ? config.AUDIO_CONSTRAINTS : false
+            };
+            
+            console.log('Getting user media with constraints:', constraints);
+            
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(getUserMediaSuccess)
-                .then((stream) => { })
-                .catch((e) => console.log(e))
+                .catch((e) => {
+                    console.error('getUserMedia error:', e);
+                    if (e.name === 'NotAllowedError') {
+                        alert('Camera/microphone access was denied. Please allow camera and microphone permissions.');
+                    } else if (e.name === 'NotFoundError') {
+                        alert('No camera or microphone found on this device.');
+                    } else if (e.name === 'NotSupportedError') {
+                        alert('Camera/microphone is not supported in this browser.');
+                    } else {
+                        alert(`Camera access error: ${e.message}`);
+                    }
+                });
         } else {
             try {
                 let tracks = localVideoref.current.srcObject.getTracks()

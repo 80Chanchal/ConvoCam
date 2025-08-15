@@ -90,14 +90,36 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .meetUserVideo {
-    width: 150px;
-    height: 112px;
+    width: 120px;
+    height: 90px;
     top: 10px;
     right: 10px;
+    border-width: 2px;
   }
   
   .conferenceView {
     padding: 10px;
+    padding-bottom: 100px;
+    gap: 10px;
+  }
+  
+  .conferenceView video {
+    width: 100%;
+    max-width: 300px;
+    height: 225px;
+  }
+  
+  .buttonContainers {
+    bottom: 10px;
+    padding: 8px 15px;
+    gap: 3px;
+  }
+  
+  .buttonContainers button {
+    min-width: 40px !important;
+    height: 40px !important;
+  }
+}
     padding-bottom: 100px;
   }
   
